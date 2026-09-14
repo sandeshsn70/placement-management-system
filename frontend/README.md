@@ -3,6 +3,12 @@
 A React (Vite) frontend for the Placement Management System backend in the parent
 directory. Talks to the Spring Boot API over REST with JWT auth.
 
+## Project Live Link
+
+```bash
+https://placement-management-frontend-vzjd.onrender.com/students
+```
+
 ## Setup
 
 ```bash
