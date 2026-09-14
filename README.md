@@ -4,7 +4,7 @@ A full-stack app for managing campus placements: departments, students,
 companies, jobs, placement drives, applications, interviews, offers, and
 JWT-based login/roles.
 
-[`https://placement-management-frontend-vzjd.onrender.com/students`]
+[`https://placement-management-frontend-vzjd.onrender.com/students`](https://placement-management-frontend-vzjd.onrender.com/students)
 
 
 - **`/` (this directory)** — Spring Boot 4.1.1 REST API. See below.
