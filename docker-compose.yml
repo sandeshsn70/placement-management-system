@@ -1,0 +1,50 @@
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-placement_management}
+      MYSQL_USER: ${MYSQL_USER:-pms_app}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    # e2-micro only has 1GB total RAM, shared with the backend and nginx
+    # below, so MySQL's defaults (which assume much more memory) are trimmed
+    # down here rather than left to guess from the host.
+    command:
+      - --innodb-buffer-pool-size=128M
+      - --performance-schema=OFF
+      - --max-connections=50
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: ${BACKEND_IMAGE}
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-placement_management}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-pms_app}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JWT_SECRET: ${JWT_SECRET}
+      # Caps the JVM heap well below the VM's 1GB so it can't starve MySQL
+      # and nginx out of memory.
+      JAVA_TOOL_OPTIONS: -Xmx320m -Xss256k
+
+  frontend:
+    image: ${FRONTEND_IMAGE}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  mysql_data:
